@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 import '../models/sensor_data.dart';
 import '../providers/sensor_provider.dart';
 
@@ -21,6 +24,50 @@ class _HistoryScreenState extends State<HistoryScreen> {
   void initState() {
     super.initState();
     _filter = widget.initialFilter;
+  }
+
+  Future<void> _exportData(List<SensorData> data) async {
+    try {
+      final csvData = _generateCSV(data);
+      final fileName = 'helmet_sensor_data_${DateTime.now().toIso8601String().split('T')[0]}.csv';
+      
+      if (Platform.isAndroid || Platform.isIOS) {
+        final tempDir = await getTemporaryDirectory();
+        final file = File('${tempDir.path}/$fileName');
+        await file.writeAsString(csvData);
+        await Share.shareXFiles([XFile(file.path)], text: 'Helmet Sensor Data Export');
+      } else {
+        // For web/desktop, just show the data
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Data exported: $fileName')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Export failed: $e')),
+      );
+    }
+  }
+
+  String _generateCSV(List<SensorData> data) {
+    final buffer = StringBuffer();
+    buffer.writeln('Timestamp,Gas (PPM),Alcohol (%),MPU X,MPU Y,MPU Z,Temperature (°C),Humidity (%),User Temperature (°C)');
+    
+    for (final item in data) {
+      buffer.writeln(
+        '${item.timestamp.toIso8601String()},'
+        '${item.gas},'
+        '${item.alcohol},'
+        '${item.mpuX},'
+        '${item.mpuY},'
+        '${item.mpuZ},'
+        '${item.temperature},'
+        '${item.humidity},'
+        '${item.userTemperature}'
+      );
+    }
+    
+    return buffer.toString();
   }
 
   @override
@@ -48,6 +95,29 @@ class _HistoryScreenState extends State<HistoryScreen> {
               ),
               const SizedBox(height: 18),
               _SummaryRow(latest: latest, filter: _filter),
+              const SizedBox(height: 18),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      '${_getFilteredData(history, _filter).length} records',
+                      style: const TextStyle(
+                        color: Colors.grey,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: () => _exportData(_getFilteredData(history, _filter)),
+                    icon: const Icon(Icons.download, size: 16),
+                    label: const Text('Export CSV'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1E6DE4),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 18),
               Expanded(
                 child: history.isEmpty
@@ -163,16 +233,16 @@ class _FilterChips extends StatelessWidget {
   }
 }
 
-String _filterLabel(HistoryFilter filter) {
-  switch (filter) {
-    case HistoryFilter.all:
-      return 'All';
-    case HistoryFilter.gas:
-      return 'Gas';
-    case HistoryFilter.alcohol:
-      return 'Alcohol';
-    case HistoryFilter.temperature:
-      return 'Temp';
+List<SensorData> _getFilteredData(List<SensorData> history, HistoryFilter filter) {
+    switch (filter) {
+      case HistoryFilter.gas:
+        return history.where((item) => item.gas > 50).toList();
+      case HistoryFilter.alcohol:
+        return history.where((item) => item.alcohol > 0.05).toList();
+      case HistoryFilter.temperature:
+        return history.where((item) => item.temperature > 30 || item.temperature < 15).toList();
+      default:
+        return history;
   }
 }
 

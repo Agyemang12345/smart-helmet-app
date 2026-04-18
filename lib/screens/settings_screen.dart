@@ -20,6 +20,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   late TextEditingController _departmentController;
   bool _isEditing = false;
 
+  // Alert thresholds
+  double _gasThreshold = 100.0;
+  double _alcoholThreshold = 0.05;
+  double _tempThreshold = 30.0;
+
   @override
   void initState() {
     super.initState();
@@ -27,6 +32,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _phoneController = TextEditingController();
     _departmentController = TextEditingController();
     _profileFuture = _fetchProfile();
+    _loadAlertThresholds();
   }
 
   Future<SupervisorProfile?> _fetchProfile() async {
@@ -58,6 +64,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
       print('Error fetching profile: $e');
       return null;
     }
+  }
+
+  Future<void> _loadAlertThresholds() async {
+    // Load from shared preferences or Firebase
+    // For now, using default values
+  }
+
+  Future<void> _saveAlertThresholds() async {
+    // Save to shared preferences or Firebase
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Alert thresholds saved')),
+    );
   }
 
   Future<void> _updateProfile() async {
@@ -381,6 +399,58 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 const SizedBox(height: 24),
 
+                // Alert Thresholds Section
+                const Text(
+                  'Alert Thresholds',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _buildThresholdSlider(
+                  title: 'Gas Level Alert',
+                  subtitle: 'Trigger alert when gas exceeds this level',
+                  value: _gasThreshold,
+                  min: 50,
+                  max: 500,
+                  unit: 'PPM',
+                  onChanged: (value) => setState(() => _gasThreshold = value),
+                ),
+                _buildThresholdSlider(
+                  title: 'Alcohol Level Alert',
+                  subtitle: 'Trigger alert when alcohol exceeds this level',
+                  value: _alcoholThreshold,
+                  min: 0.01,
+                  max: 0.5,
+                  unit: '%BAC',
+                  divisions: 49,
+                  onChanged: (value) => setState(() => _alcoholThreshold = value),
+                ),
+                _buildThresholdSlider(
+                  title: 'Temperature Alert',
+                  subtitle: 'Trigger alert when temperature exceeds this level',
+                  value: _tempThreshold,
+                  min: 20,
+                  max: 50,
+                  unit: '°C',
+                  onChanged: (value) => setState(() => _tempThreshold = value),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _saveAlertThresholds,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1E6DE4),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    child: const Text('Save Alert Settings'),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
                 // Account Management Section
                 const Text(
                   'Account Management',
@@ -506,6 +576,72 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  Widget _buildThresholdSlider({
+    required String title,
+    required String subtitle,
+    required double value,
+    required double min,
+    required double max,
+    required String unit,
+    int? divisions,
+    required ValueChanged<double> onChanged,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w500,
+              fontSize: 16,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            subtitle,
+            style: TextStyle(
+              color: Colors.grey[400],
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Text(
+                '${value.toStringAsFixed(value < 1 ? 2 : 0)} $unit',
+                style: const TextStyle(
+                  color: Color(0xFF1E6DE4),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              Expanded(
+                child: Slider(
+                  value: value,
+                  min: min,
+                  max: max,
+                  divisions: divisions ?? (max - min).toInt(),
+                  activeColor: const Color(0xFF1E6DE4),
+                  inactiveColor: Colors.grey[600],
+                  onChanged: onChanged,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSettingOption({
     required IconData icon,
     required String title,
@@ -592,15 +728,21 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            const Icon(
+              Icons.verified_user,
+              color: Color(0xFF1E6DE4),
+              size: 48,
+            ),
+            const SizedBox(height: 16),
             const Text(
               'Change Password',
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 20,
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
             TextField(
               controller: _oldPasswordController,
               obscureText: _obscureOld,
@@ -617,7 +759,8 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
                     _obscureOld ? Icons.visibility_off : Icons.visibility,
                     color: Colors.grey,
                   ),
-                  onPressed: () => setState(() => _obscureOld = !_obscureOld),
+                  onPressed: () =>
+                      setState(() => _obscureOld = !_obscureOld),
                 ),
               ),
               style: const TextStyle(color: Colors.white),
@@ -639,7 +782,8 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
                     _obscureNew ? Icons.visibility_off : Icons.visibility,
                     color: Colors.grey,
                   ),
-                  onPressed: () => setState(() => _obscureNew = !_obscureNew),
+                  onPressed: () =>
+                      setState(() => _obscureNew = !_obscureNew),
                 ),
               ),
               style: const TextStyle(color: Colors.white),

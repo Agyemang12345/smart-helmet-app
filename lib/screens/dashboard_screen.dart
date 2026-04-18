@@ -4,6 +4,7 @@ import '../providers/sensor_provider.dart';
 import 'alerts_screen.dart';
 import 'history_screen.dart';
 import 'settings_screen.dart';
+import 'settings_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -29,14 +30,21 @@ class DashboardScreen extends StatelessWidget {
                 children: [
                   _HeaderSection(isConnected: provider.isConnected),
                   const SizedBox(height: 18),
-                  Expanded(
-                    child: data == null
-                        ? const Center(
-                            child: CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                  Color(0xFF56CCF2)),
-                            ),
-                          )
+                  Expanded(RefreshIndicator(
+                      onRefresh: () async {
+                        await provider._fetchData();
+                      },
+                      color: const Color(0xFF56CCF2),
+                      backgroundColor: const Color(0xFF142D4C),
+                      child: data == null
+                          ? const Center(
+                              child: CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                    Color(0xFF56CCF2)),
+                              ),
+                            )
+                          : _DashboardContent(data: data),
+                    
                         : _DashboardContent(data: data),
                   ),
                 ],

@@ -46,6 +46,12 @@ class SensorProvider with ChangeNotifier {
       await _fetchData();
     });
   }
+  Future<void> refreshData() async {
+    await _fetchData();
+  }
+  Future<void> refreshData() async {
+    await _fetchData();
+  }
 
   Future<void> _fetchData() async {
     final data = await BlynkService().fetchSensorData();
