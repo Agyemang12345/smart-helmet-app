@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/sensor_provider.dart';
 import 'alerts_screen.dart';
 import 'history_screen.dart';
+import 'settings_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -625,6 +626,15 @@ class _BottomNavBar extends StatelessWidget {
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const AlertsScreen()),
+              );
+            },
+          ),
+          _BottomActionButton(
+            icon: Icons.settings,
+            label: 'Settings',
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const SettingsScreen()),
               );
             },
           ),
