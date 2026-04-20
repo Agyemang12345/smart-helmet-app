@@ -29,13 +29,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Future<void> _exportData(List<SensorData> data) async {
     try {
       final csvData = _generateCSV(data);
-      final fileName = 'helmet_sensor_data_${DateTime.now().toIso8601String().split('T')[0]}.csv';
-      
+      final fileName =
+          'helmet_sensor_data_${DateTime.now().toIso8601String().split('T')[0]}.csv';
+
       if (Platform.isAndroid || Platform.isIOS) {
         final tempDir = await getTemporaryDirectory();
         final file = File('${tempDir.path}/$fileName');
         await file.writeAsString(csvData);
-        await Share.shareXFiles([XFile(file.path)], text: 'Helmet Sensor Data Export');
+        await Share.shareXFiles([XFile(file.path)],
+            text: 'Helmet Sensor Data Export');
       } else {
         // For web/desktop, just show the data
         ScaffoldMessenger.of(context).showSnackBar(
@@ -51,22 +53,21 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   String _generateCSV(List<SensorData> data) {
     final buffer = StringBuffer();
-    buffer.writeln('Timestamp,Gas (PPM),Alcohol (%),MPU X,MPU Y,MPU Z,Temperature (°C),Humidity (%),User Temperature (°C)');
-    
+    buffer.writeln(
+        'Timestamp,Gas (PPM),Alcohol (%),MPU X,MPU Y,MPU Z,Temperature (°C),Humidity (%),User Temperature (°C)');
+
     for (final item in data) {
-      buffer.writeln(
-        '${item.timestamp.toIso8601String()},'
-        '${item.gas},'
-        '${item.alcohol},'
-        '${item.mpuX},'
-        '${item.mpuY},'
-        '${item.mpuZ},'
-        '${item.temperature},'
-        '${item.humidity},'
-        '${item.userTemperature}'
-      );
+      buffer.writeln('${item.timestamp.toIso8601String()},'
+          '${item.gas},'
+          '${item.alcohol},'
+          '${item.mpuX},'
+          '${item.mpuY},'
+          '${item.mpuZ},'
+          '${item.temperature},'
+          '${item.humidity},'
+          '${item.userTemperature}');
     }
-    
+
     return buffer.toString();
   }
 
@@ -108,12 +109,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     ),
                   ),
                   ElevatedButton.icon(
-                    onPressed: () => _exportData(_getFilteredData(history, _filter)),
+                    onPressed: () =>
+                        _exportData(_getFilteredData(history, _filter)),
                     icon: const Icon(Icons.download, size: 16),
                     label: const Text('Export CSV'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF1E6DE4),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
                     ),
                   ),
                 ],
@@ -233,16 +236,19 @@ class _FilterChips extends StatelessWidget {
   }
 }
 
-List<SensorData> _getFilteredData(List<SensorData> history, HistoryFilter filter) {
-    switch (filter) {
-      case HistoryFilter.gas:
-        return history.where((item) => item.gas > 50).toList();
-      case HistoryFilter.alcohol:
-        return history.where((item) => item.alcohol > 0.05).toList();
-      case HistoryFilter.temperature:
-        return history.where((item) => item.temperature > 30 || item.temperature < 15).toList();
-      default:
-        return history;
+List<SensorData> _getFilteredData(
+    List<SensorData> history, HistoryFilter filter) {
+  switch (filter) {
+    case HistoryFilter.gas:
+      return history.where((item) => item.gas > 50).toList();
+    case HistoryFilter.alcohol:
+      return history.where((item) => item.alcohol > 0.05).toList();
+    case HistoryFilter.temperature:
+      return history
+          .where((item) => item.temperature > 30 || item.temperature < 15)
+          .toList();
+    default:
+      return history;
   }
 }
 

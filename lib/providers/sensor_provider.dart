@@ -46,9 +46,11 @@ class SensorProvider with ChangeNotifier {
       await _fetchData();
     });
   }
+
   Future<void> refreshData() async {
     await _fetchData();
   }
+
   Future<void> refreshData() async {
     await _fetchData();
   }

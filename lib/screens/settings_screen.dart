@@ -426,7 +426,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   max: 0.5,
                   unit: '%BAC',
                   divisions: 49,
-                  onChanged: (value) => setState(() => _alcoholThreshold = value),
+                  onChanged: (value) =>
+                      setState(() => _alcoholThreshold = value),
                 ),
                 _buildThresholdSlider(
                   title: 'Temperature Alert',
@@ -759,8 +760,7 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
                     _obscureOld ? Icons.visibility_off : Icons.visibility,
                     color: Colors.grey,
                   ),
-                  onPressed: () =>
-                      setState(() => _obscureOld = !_obscureOld),
+                  onPressed: () => setState(() => _obscureOld = !_obscureOld),
                 ),
               ),
               style: const TextStyle(color: Colors.white),
@@ -782,8 +782,7 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
                     _obscureNew ? Icons.visibility_off : Icons.visibility,
                     color: Colors.grey,
                   ),
-                  onPressed: () =>
-                      setState(() => _obscureNew = !_obscureNew),
+                  onPressed: () => setState(() => _obscureNew = !_obscureNew),
                 ),
               ),
               style: const TextStyle(color: Colors.white),
